@@ -1,15 +1,21 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import AutoImport from "unplugin-auto-import/vite";
+import path from "path";
 
-// https://vitejs.dev/config/
+const resolveAlias = Object.fromEntries(
+  Object.entries({
+    "@": "./src",
+  }).map(([key, value]) => [key, path.resolve(__dirname, value)])
+);
+
 export default defineConfig({
   plugins: [
     react(),
     AutoImport({
       include: [/\.tsx?$/],
       imports: ["react"],
-      dirs: ["./src/components/**"],
+      dirs: ["./src/components/@share/**"],
       dts: "./auto-imports.d.ts",
       eslintrc: {
         enabled: true,
@@ -17,8 +23,6 @@ export default defineConfig({
     }),
   ],
   resolve: {
-    alias: {
-      "@": "./src",
-    },
+    alias: resolveAlias,
   },
 });
