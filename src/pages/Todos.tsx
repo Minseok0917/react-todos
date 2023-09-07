@@ -61,10 +61,10 @@ export default function Todos() {
       todo.completed = !todo.completed;
       setTodos([...todos]);
     },
-    todoDoubleClick(todo: Todo) {},
-    todoEditFocusOut(event: React.FocusEvent) {},
-    todoEditTextChange(event: React.FormEvent) {},
-    todoEditKeydown(event: React.KeyboardEvent) {},
+    // todoDoubleClick(todo: Todo) {},
+    // todoEditFocusOut(event: React.FocusEvent) {},
+    // todoEditTextChange(event: React.FormEvent) {},
+    // todoEditKeydown(event: React.KeyboardEvent) {},
     deleteTodo(deleteTodo: Todo) {
       const removeTodos: Todo[] = todos.filter(
         (todo: Todo) => todo !== deleteTodo
