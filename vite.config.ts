@@ -6,6 +6,7 @@ import path from "path";
 const resolveAlias = Object.fromEntries(
   Object.entries({
     "@": "./src",
+    "@pages": "./src/pages",
   }).map(([key, value]) => [key, path.resolve(__dirname, value)])
 );
 
