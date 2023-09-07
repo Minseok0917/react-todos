@@ -3,7 +3,9 @@
     "baseUrl": "src",
     "paths": {
       "@/*": ["*"],
-      "@pages/*": ["pages/*"]
+      "@assets/*": ["assets/*"],
+      "@pages/*": ["pages/*"],
+      "@components/*": ["components/*"]
     },
 
     "target": "ES2020",
@@ -26,6 +28,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "./auto-imports.d.ts"],
+  "include": ["src", "./auto-imports.d.ts", "font.d.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

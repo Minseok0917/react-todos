@@ -1,4 +1,5 @@
 import React from "react";
+import * as Styled from "@components/todos/styled";
 
 interface Todo {
   id: number;
@@ -27,37 +28,31 @@ export default function Todos() {
     clearCompletedTodos(event: React.KeyboardEvent) {},
   };
 
-  /*
-    handler list
-    - head input(
-        input : setInput
-        keydown : input.length & todos push
-      )
-    - head all checked(
-        toggle click 
-    )
-    - body list checkbox(
-        toggle clike
-    )
-    - body list text( = currentFilterTodos
-      dbclick : edit on & focus
-      focusout : edit off & exception 
-      input : editText
-      keydown : edit success 
-    )
-    - body list button (
-      click : delete
-    )
-    - footer text (
-      text : n > 1 ? items : item
-    )
-    - footer filter (
-      click : filterChange
-    )
-    - footer clearComplete (
-      click : completeAll Remove 
-    )
-  */
-
-  return <div></div>;
+  return (
+    <Styled.Todos>
+      <Styled.TodoHead>
+        <Styled.TodoTitle>TODOS</Styled.TodoTitle>
+        <Styled.TodoInput />
+      </Styled.TodoHead>
+      <Styled.TodoMain>
+        <Styled.TodoList>
+          <Styled.TodoItem>
+            <Styled.TodoItemCheckBox />
+            <Styled.TodoItemText>흑</Styled.TodoItemText>
+            <Styled.TodoItemEditInput />
+            <Styled.TodoItemDeleteButton>삭제</Styled.TodoItemDeleteButton>
+          </Styled.TodoItem>
+        </Styled.TodoList>
+      </Styled.TodoMain>
+      <Styled.TodoFooter>
+        <Styled.TodoCountText>2 items left</Styled.TodoCountText>
+        <Styled.TodoFilter>
+          <Styled.TodoFilterOption>ALL</Styled.TodoFilterOption>
+        </Styled.TodoFilter>
+        <Styled.TodoClearCompleteButton>
+          Clear Complete
+        </Styled.TodoClearCompleteButton>
+      </Styled.TodoFooter>
+    </Styled.Todos>
+  );
 }
