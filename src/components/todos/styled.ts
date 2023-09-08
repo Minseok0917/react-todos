@@ -72,10 +72,12 @@ export const TodoItemCheckBox = styled.div<{ $edit: boolean }>`
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: pointer;
   color: green;
   &:hover {
     border: 1px solid #ccc;
+  }
+  .svg {
+    cursor: pointer;
   }
   visibility: ${(props) => (props.$edit ? "hidden" : "visible")};
   pointer-events: ${(props) => (props.$edit ? "none" : "all")};
