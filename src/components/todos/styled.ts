@@ -63,7 +63,7 @@ export const TodoItem = styled.div`
     color: #999;
   }
 `;
-export const TodoItemCheckBox = styled.div<{ edit: boolean }>`
+export const TodoItemCheckBox = styled.div<{ edit: string }>`
   width: 2.25rem;
   height: 2.25rem;
   font-size: 1.25rem;
@@ -77,8 +77,8 @@ export const TodoItemCheckBox = styled.div<{ edit: boolean }>`
   &:hover {
     border: 1px solid #ccc;
   }
-  visibility: ${(props) => (props.edit ? "hidden" : "visible")};
-  pointer-events: ${(props) => (props.edit ? "none" : "all")};
+  visibility: ${(props) => (props.edit === "true" ? "hidden" : "visible")};
+  pointer-events: ${(props) => (props.edit === "true" ? "none" : "all")};
 `;
 export const TodoItemText = styled.span`
   flex: 1;
