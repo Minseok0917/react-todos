@@ -45,8 +45,6 @@ export default function Todos() {
     localStorage.setItem("filter", filter);
   }, [todos, inputText, nextId, filter]);
 
-  console.log(todos);
-
   const filterServices = {
     ALL: () => todos,
     ACTIVE: () => todos.filter(({ completed }: Todo) => !completed),
