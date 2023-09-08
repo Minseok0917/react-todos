@@ -38,6 +38,11 @@ export default function Todos() {
     [todos]
   );
 
+  const activeTodoCount: number = useMemo(
+    () => todos.filter(({ completed }: Todo) => !completed).length,
+    [todos]
+  );
+
   useEffect(() => {
     localStorage.setItem("todos", JSON.stringify(todos));
     localStorage.setItem("nextId", `${nextId}`);
@@ -194,7 +199,7 @@ export default function Todos() {
         {todos.length > 0 && (
           <Styled.TodoFooter>
             <Styled.TodoCountText>
-              {todos.length} item{todos.length > 1 ? "s" : ""} left
+              {activeTodoCount} item{todos.length > 1 ? "s" : ""} left
             </Styled.TodoCountText>
             <Styled.TodoFilter>
               <Styled.TodoFilterOption
