@@ -6,6 +6,7 @@ interface Todo {
   id: number;
   text: string;
   completed: boolean;
+  edit: boolean;
 }
 type Filter = "ALL" | "ACTIVE" | "COMPLETE";
 
@@ -15,11 +16,13 @@ export default function Todos() {
   const [filter, setFilter] = useState<Filter>("ALL");
   const [nextId, setNextId] = useState<number>(0);
 
-  const isAllCompletedTodo = useMemo(
+  const todoRefs = useRef<{ [key: number]: HTMLInputElement }>({});
+
+  const isAllCompletedTodo: Boolean = useMemo(
     () => todos.every(({ completed }: Todo) => completed),
     [todos]
   );
-  const isExistCompletedTodo = useMemo(
+  const isExistCompletedTodo: Boolean = useMemo(
     () => todos.some(({ completed }: Todo) => completed),
     [todos]
   );
@@ -44,6 +47,7 @@ export default function Todos() {
           id: nextId,
           text: inputValue,
           completed: false,
+          edit: false,
         };
         setInputText("");
         setNextId(nextId + 1);
@@ -61,10 +65,38 @@ export default function Todos() {
       todo.completed = !todo.completed;
       setTodos([...todos]);
     },
-    // todoDoubleClick(todo: Todo) {},
-    // todoEditFocusOut(event: React.FocusEvent) {},
-    // todoEditTextChange(event: React.FormEvent) {},
-    // todoEditKeydown(event: React.KeyboardEvent) {},
+    todoDoubleClick(todo: Todo) {
+      todo.edit = true;
+      setTodos([...todos]);
+      setTimeout(() => todoRefs.current[todo.id].focus(), 0);
+    },
+    todoEditBlur(todo: Todo) {
+      todo.edit = false;
+      setTodos([...todos]);
+    },
+    todoEditTextChange(event: React.FormEvent<HTMLInputElement>, todo: Todo) {
+      todo.text = event.currentTarget.value;
+      setTodos([...todos]);
+    },
+    todoEditKeydown(
+      event: React.KeyboardEvent<HTMLInputElement>,
+      editTodo: Todo
+    ) {
+      const inputValue = event.currentTarget.value.trim();
+      const isEdit: Boolean = ["Tab", "Enter"].includes(event.key);
+      const isValid: Boolean = inputValue.length > 0;
+      if (isEdit) {
+        if (isValid) {
+          editTodo.edit = false;
+          setTodos([...todos]);
+        } else {
+          const notEditTodos: Todo[] = todos.filter(
+            (todo) => todo !== editTodo
+          );
+          setTodos(notEditTodos);
+        }
+      }
+    },
     deleteTodo(deleteTodo: Todo) {
       const removeTodos: Todo[] = todos.filter(
         (todo: Todo) => todo !== deleteTodo
@@ -110,13 +142,34 @@ export default function Todos() {
               >
                 {todo.completed && <BsCheckLg />}
               </Styled.TodoItemCheckBox>
-              <Styled.TodoItemText>{todo.text}</Styled.TodoItemText>
-              {/* <Styled.TodoItemEditInput /> */}
-              <Styled.TodoItemDeleteButton
-                onClick={() => handlers.deleteTodo(todo)}
-              >
-                <BsTrash3 />
-              </Styled.TodoItemDeleteButton>
+              {todo.edit ? (
+                <Styled.TodoItemEditInput
+                  value={todo.text}
+                  ref={($element: HTMLInputElement) =>
+                    (todoRefs.current[todo.id] = $element)
+                  }
+                  onBlur={() => handlers.todoEditBlur(todo)}
+                  onInput={(event: React.FormEvent<HTMLInputElement>) =>
+                    handlers.todoEditTextChange(event, todo)
+                  }
+                  onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) =>
+                    handlers.todoEditKeydown(event, todo)
+                  }
+                />
+              ) : (
+                <>
+                  <Styled.TodoItemText
+                    onDoubleClick={() => handlers.todoDoubleClick(todo)}
+                  >
+                    {todo.text}
+                  </Styled.TodoItemText>
+                  <Styled.TodoItemDeleteButton
+                    onClick={() => handlers.deleteTodo(todo)}
+                  >
+                    <BsTrash3 />
+                  </Styled.TodoItemDeleteButton>
+                </>
+              )}
             </Styled.TodoItem>
           ))}
         </Styled.TodoList>

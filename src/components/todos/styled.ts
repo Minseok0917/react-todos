@@ -83,7 +83,10 @@ export const TodoItemText = styled.span`
   padding: 0.5rem;
   user-select: none;
 `;
-export const TodoItemEditInput = styled.div``;
+export const TodoItemEditInput = styled.input`
+  flex: 1;
+  padding: 0.5rem;
+`;
 export const TodoItemDeleteButton = styled.button`
   display: none;
   font-size: 1.25rem;
