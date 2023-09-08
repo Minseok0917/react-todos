@@ -11,10 +11,21 @@ interface Todo {
 type Filter = "ALL" | "ACTIVE" | "COMPLETE";
 
 export default function Todos() {
-  const [inputText, setInputText] = useState<string>("");
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [filter, setFilter] = useState<Filter>("ALL");
-  const [nextId, setNextId] = useState<number>(0);
+  const storedTodos = localStorage.getItem("todos");
+  const storedNextId = localStorage.getItem("nextId");
+  const storedTodoText = localStorage.getItem("todoText");
+  const storedFilter = localStorage.getItem("filter");
+
+  const [todos, setTodos] = useState<Todo[]>(
+    storedTodos ? JSON.parse(storedTodos) : []
+  );
+  const [filter, setFilter] = useState<Filter>(
+    (storedFilter as Filter) ?? "ALL"
+  );
+  const [nextId, setNextId] = useState<number>(
+    storedNextId ? +storedNextId : 0
+  );
+  const [inputText, setInputText] = useState<string>(storedTodoText ?? "");
 
   const todoRefs = useRef<{ [key: number]: HTMLInputElement }>({});
 
@@ -26,6 +37,15 @@ export default function Todos() {
     () => todos.some(({ completed }: Todo) => completed),
     [todos]
   );
+
+  useEffect(() => {
+    localStorage.setItem("todos", JSON.stringify(todos));
+    localStorage.setItem("nextId", `${nextId}`);
+    localStorage.setItem("todoText", inputText);
+    localStorage.setItem("filter", filter);
+  }, [todos, inputText, nextId, filter]);
+
+  console.log(todos);
 
   const filterServices = {
     ALL: () => todos,
