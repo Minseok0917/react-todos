@@ -161,6 +161,7 @@ export default function Todos() {
           {currentTodos.map((todo: Todo) => (
             <Styled.TodoItem key={todo.id}>
               <Styled.TodoItemCheckBox
+                edit={todo.edit.toString()}
                 onClick={() => handlers.toggleTodoCompleted(todo)}
               >
                 {todo.completed && <BsCheckLg />}
