@@ -82,6 +82,7 @@ export const TodoItemText = styled.span`
   flex: 1;
   padding: 0.5rem;
   user-select: none;
+  white-space: pre;
 `;
 export const TodoItemEditInput = styled.input`
   flex: 1;
