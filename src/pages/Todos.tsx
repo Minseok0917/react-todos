@@ -1,6 +1,7 @@
 import React from "react";
 import { BsTrash3, BsChevronCompactDown, BsCheckLg } from "react-icons/bs";
 import * as Styled from "@components/todos/styled";
+import { useLocalStorage } from "@/hooks/storage";
 
 interface Todo {
   id: number;
@@ -10,56 +11,50 @@ interface Todo {
 }
 type Filter = "ALL" | "ACTIVE" | "COMPLETE";
 
-export default function Todos() {
-  const storedTodos = localStorage.getItem("todos");
-  const storedNextId = localStorage.getItem("nextId");
-  const storedTodoText = localStorage.getItem("todoText");
-  const storedFilter = localStorage.getItem("filter");
+interface State {
+  todos: Todo[];
+  todoText: String;
+  filter: Filter;
+}
 
-  const [todos, setTodos] = useState<Todo[]>(
-    storedTodos ? JSON.parse(storedTodos) : []
-  );
-  const [filter, setFilter] = useState<Filter>(
-    (storedFilter as Filter) ?? "ALL"
-  );
-  const [nextId, setNextId] = useState<number>(
-    storedNextId ? +storedNextId : 0
-  );
-  const [inputText, setInputText] = useState<string>(storedTodoText ?? "");
+export default function Todos() {
+  const [id, setId] = useLocalStorage<number>("todoId", 0);
+  const [state, setState] = useLocalStorage<State>("todos", {
+    todos: [],
+    todoText: "",
+    filter: "ALL",
+  });
+  console.log(state.todos);
 
   const todoRefs = useRef<{ [key: number]: HTMLInputElement }>({});
 
   const isAllCompletedTodo: Boolean = useMemo(
-    () => todos.every(({ completed }: Todo) => completed),
-    [todos]
+    () => state.todos.every(({ completed }: Todo) => completed),
+    [state.todos]
   );
   const isExistCompletedTodo: Boolean = useMemo(
-    () => todos.some(({ completed }: Todo) => completed),
-    [todos]
+    () => state.todos.some(({ completed }: Todo) => completed),
+    [state.todos]
   );
 
   const activeTodoCount: number = useMemo(
-    () => todos.filter(({ completed }: Todo) => !completed).length,
-    [todos]
+    () => state.todos.filter(({ completed }: Todo) => !completed).length,
+    [state.todos]
   );
 
-  useEffect(() => {
-    localStorage.setItem("todos", JSON.stringify(todos));
-    localStorage.setItem("nextId", `${nextId}`);
-    localStorage.setItem("todoText", inputText);
-    localStorage.setItem("filter", filter);
-  }, [todos, inputText, nextId, filter]);
-
   const filterServices = {
-    ALL: () => todos,
-    ACTIVE: () => todos.filter(({ completed }: Todo) => !completed),
-    COMPLETE: () => todos.filter(({ completed }: Todo) => completed),
+    ALL: () => state.todos,
+    ACTIVE: () => state.todos.filter(({ completed }: Todo) => !completed),
+    COMPLETE: () => state.todos.filter(({ completed }: Todo) => completed),
   };
-  const currentTodos = useMemo(() => filterServices[filter](), [todos, filter]);
+  const currentTodos = useMemo(
+    () => filterServices[state.filter](),
+    [state.todos, state.filter]
+  );
 
   const handlers = {
     inputChange(event: React.FormEvent<HTMLInputElement>) {
-      setInputText(event.currentTarget.value);
+      setState({ ...state, todoText: event.currentTarget.value });
     },
     inputKeydown(event: React.KeyboardEvent<HTMLInputElement>) {
       const inputValue = event.currentTarget.value.trim();
@@ -67,39 +62,38 @@ export default function Todos() {
       const isValid: Boolean = inputValue.length > 0;
       if (isCreated && isValid) {
         const todo: Todo = {
-          id: nextId,
+          id,
           text: inputValue,
           completed: false,
           edit: false,
         };
-        setInputText("");
-        setNextId(nextId + 1);
-        setTodos([...todos, todo]);
+        setId(id + 1);
+        setState({ ...state, todos: [...state.todos, todo], todoText: "" });
       }
     },
     toggleAllTodos() {
-      const toggleTodos: Todo[] = todos.map((todo: Todo) => ({
+      const toggleTodos: Todo[] = state.todos.map((todo: Todo) => ({
         ...todo,
         completed: !isAllCompletedTodo,
       }));
-      setTodos([...toggleTodos]);
+      setState({ ...state, todos: [...toggleTodos] });
     },
     toggleTodoCompleted(todo: Todo) {
       todo.completed = !todo.completed;
-      setTodos([...todos]);
+      setState({ ...state });
     },
     todoDoubleClick(todo: Todo) {
       todo.edit = true;
-      setTodos([...todos]);
+      setState({ ...state });
       setTimeout(() => todoRefs.current[todo.id].focus(), 0);
     },
     todoEditBlur(todo: Todo) {
       todo.edit = false;
-      setTodos([...todos]);
+      setState({ ...state });
     },
     todoEditTextChange(event: React.FormEvent<HTMLInputElement>, todo: Todo) {
       todo.text = event.currentTarget.value;
-      setTodos([...todos]);
+      setState({ ...state });
     },
     todoEditKeydown(
       event: React.KeyboardEvent<HTMLInputElement>,
@@ -111,29 +105,29 @@ export default function Todos() {
       if (isEdit) {
         if (isValid) {
           editTodo.edit = false;
-          setTodos([...todos]);
+          setState({ ...state });
         } else {
-          const notEditTodos: Todo[] = todos.filter(
+          const notEditTodos: Todo[] = state.todos.filter(
             (todo) => todo !== editTodo
           );
-          setTodos(notEditTodos);
+          setState({ ...state, todos: [...notEditTodos] });
         }
       }
     },
     deleteTodo(deleteTodo: Todo) {
-      const removeTodos: Todo[] = todos.filter(
+      const removeTodos: Todo[] = state.todos.filter(
         (todo: Todo) => todo !== deleteTodo
       );
-      setTodos([...removeTodos]);
+      setState({ ...state, todos: [...removeTodos] });
     },
     changeFilter(filterName: Filter) {
-      setFilter(filterName);
+      setState({ ...state, filter: filterName });
     },
     clearCompletedTodos() {
-      const notCompleteTodos: Todo[] = todos.filter(
+      const notCompleteTodos: Todo[] = state.todos.filter(
         ({ completed }: Todo) => !completed
       );
-      setTodos([...notCompleteTodos]);
+      setState({ ...state, todos: [...notCompleteTodos] });
     },
   };
 
@@ -145,14 +139,14 @@ export default function Todos() {
           <Styled.TodoCompleteToggleIcon
             className={isAllCompletedTodo ? "active" : ""}
           >
-            {todos.length > 0 && (
+            {state.todos.length > 0 && (
               <BsChevronCompactDown onClick={handlers.toggleAllTodos} />
             )}
           </Styled.TodoCompleteToggleIcon>
           <Styled.TodoInput
             onInput={handlers.inputChange}
             onKeyDown={handlers.inputKeydown}
-            value={inputText}
+            value={state.todoText}
           />
         </Styled.TodoInputArea>
       </Styled.TodoHead>
@@ -197,27 +191,27 @@ export default function Todos() {
             </Styled.TodoItem>
           ))}
         </Styled.TodoList>
-        {todos.length > 0 && (
+        {state.todos.length > 0 && (
           <Styled.TodoFooter>
             <Styled.TodoCountText>
-              {activeTodoCount} item{todos.length > 1 ? "s" : ""} left
+              {activeTodoCount} item{state.todos.length > 1 ? "s" : ""} left
             </Styled.TodoCountText>
             <Styled.TodoFilter>
               <Styled.TodoFilterOption
                 onClick={() => handlers.changeFilter("ALL")}
-                className={filter === "ALL" ? "active" : ""}
+                className={state.filter === "ALL" ? "active" : ""}
               >
                 All
               </Styled.TodoFilterOption>
               <Styled.TodoFilterOption
                 onClick={() => handlers.changeFilter("ACTIVE")}
-                className={filter === "ACTIVE" ? "active" : ""}
+                className={state.filter === "ACTIVE" ? "active" : ""}
               >
                 Active
               </Styled.TodoFilterOption>
               <Styled.TodoFilterOption
                 onClick={() => handlers.changeFilter("COMPLETE")}
-                className={filter === "COMPLETE" ? "active" : ""}
+                className={state.filter === "COMPLETE" ? "active" : ""}
               >
                 Complete
               </Styled.TodoFilterOption>
