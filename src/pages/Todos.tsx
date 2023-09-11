@@ -18,29 +18,27 @@ interface State {
 }
 
 export default function Todos() {
-  const [id, setId] = useLocalStorage<number>("todoId", 0);
-  const [state, setState] = useLocalStorage<State>("todos", {
+  const initalState: State = {
     todos: [],
     todoText: "",
     filter: "ALL",
-  });
-  console.log(state.todos);
+  };
+  const [id, setId] = useLocalStorage("todoId", 0);
+  const [state, setState] = useLocalStorage("todos", initalState);
 
   const todoRefs = useRef<{ [key: number]: HTMLInputElement }>({});
 
-  const isAllCompletedTodo: Boolean = useMemo(
-    () => state.todos.every(({ completed }: Todo) => completed),
-    [state.todos]
-  );
-  const isExistCompletedTodo: Boolean = useMemo(
-    () => state.todos.some(({ completed }: Todo) => completed),
-    [state.todos]
+  const isAllCompletedTodo: Boolean = state.todos.every(
+    ({ completed }: Todo) => completed
   );
 
-  const activeTodoCount: number = useMemo(
-    () => state.todos.filter(({ completed }: Todo) => !completed).length,
-    [state.todos]
+  const isExistCompletedTodo: Boolean = state.todos.some(
+    ({ completed }: Todo) => completed
   );
+
+  const activeTodoCount: number = state.todos.filter(
+    ({ completed }: Todo) => !completed
+  ).length;
 
   const filterServices = {
     ALL: () => state.todos,
