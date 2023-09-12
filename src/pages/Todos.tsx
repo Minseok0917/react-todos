@@ -1,48 +1,30 @@
 import React from "react";
-import { BsTrash3, BsChevronCompactDown, BsCheckLg } from "react-icons/bs";
-import * as Styled from "@components/todos/styled";
 import { useLocalStorage } from "@/hooks/storage";
-import { TodoInput } from "@components/todos/TodoInput";
-
-interface Todo {
-  id: number;
-  text: string;
-  completed: boolean;
-  edit: boolean;
-}
-type Filter = "ALL" | "ACTIVE" | "COMPLETE";
-
-interface State {
-  todos: Todo[];
-  todoText: String;
-  filter: Filter;
-}
+import { TodoPresenter } from "@components/todos";
+import { Filter, Todo, State } from "@components/todos/todos.interface";
 
 export default function Todos() {
-  const initalState: State = {
+  const initalState = (): State => ({
     todos: [],
     todoText: "",
     filter: "ALL",
-  };
+  });
   const [id, setId] = useLocalStorage("todoId", 0);
-  const [state, setState] = useLocalStorage("todos", initalState, {
+  const [state, setState] = useLocalStorage("todos", initalState(), {
     debounce: true,
     debounceDelay: 150,
   });
 
-  const isAllCompletedTodo: Boolean = state.todos.every(({ completed }: Todo) => completed);
-
-  const isExistCompletedTodo: Boolean = state.todos.some(({ completed }: Todo) => completed);
+  const filters: Filter[] = ["ALL", "ACTIVE", "COMPLETE"];
+  const todos: Todo[] = state.todos.filter((todo) => {
+    if (state.filter === "ACTIVE") return !todo.completed;
+    if (state.filter === "COMPLETE") return todo.completed;
+    return true;
+  });
 
   const activeTodoCount: number = state.todos.filter(({ completed }: Todo) => !completed).length;
-
-  const filters: Filter[] = ["ALL", "ACTIVE", "COMPLETE"];
-  const filterServices = {
-    ALL: () => state.todos,
-    ACTIVE: () => state.todos.filter(({ completed }: Todo) => !completed),
-    COMPLETE: () => state.todos.filter(({ completed }: Todo) => completed),
-  };
-  const currentTodos = useMemo(() => filterServices[state.filter](), [state.todos, state.filter]);
+  const isAllCompletedTodo: Boolean = state.todos.every(({ completed }: Todo) => completed);
+  const isExistCompletedTodo: Boolean = state.todos.some(({ completed }: Todo) => completed);
 
   const createTodo = (text: string): Todo => ({
     id,
@@ -115,71 +97,21 @@ export default function Todos() {
   }
 
   return (
-    <Styled.Todos>
-      <Styled.TodoHead>
-        <Styled.TodoTitle>TODOS</Styled.TodoTitle>
-        <Styled.TodoInputArea>
-          <Styled.TodoCompleteToggleIcon className={isAllCompletedTodo ? "active" : ""}>
-            {state.todos.length > 0 && <BsChevronCompactDown onClick={handleToggleAllClick} />}
-          </Styled.TodoCompleteToggleIcon>
-          <Styled.TodoInput
-            onInput={handleCreateInputChange}
-            onKeyDown={handleCreateInputKeydown}
-            value={String(state.todoText)}
-          />
-        </Styled.TodoInputArea>
-      </Styled.TodoHead>
-      <Styled.TodoMain>
-        <Styled.TodoList>
-          {currentTodos.map((todo: Todo) => (
-            <Styled.TodoItem key={todo.id}>
-              <Styled.TodoItemCheckBox $edit={todo.edit} onClick={() => handleCheckBoxClick(todo)}>
-                {todo.completed && <BsCheckLg />}
-              </Styled.TodoItemCheckBox>
-              {todo.edit ? (
-                <TodoInput
-                  value={todo.text}
-                  focus={todo.edit}
-                  onBlur={() => handleEditInputBlur(todo)}
-                  onInput={(event: React.FormEvent<HTMLInputElement>) => handleEditInputChange(event, todo)}
-                  onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => handleEditInputKeydown(event, todo)}
-                />
-              ) : (
-                <>
-                  <Styled.TodoItemText onDoubleClick={() => handleTextDoubleClick(todo)}>
-                    {todo.text}
-                  </Styled.TodoItemText>
-                  <Styled.TodoItemDeleteButton onClick={() => handleDeleteClick(todo)}>
-                    <BsTrash3 />
-                  </Styled.TodoItemDeleteButton>
-                </>
-              )}
-            </Styled.TodoItem>
-          ))}
-        </Styled.TodoList>
-        {state.todos.length > 0 && (
-          <Styled.TodoFooter>
-            <Styled.TodoCountText>
-              {activeTodoCount} item{state.todos.length > 1 ? "s" : ""} left
-            </Styled.TodoCountText>
-            <Styled.TodoFilter>
-              {filters.map((filter) => (
-                <Styled.TodoFilterOption
-                  onClick={() => handleFilterChange(filter)}
-                  className={state.filter === filter ? "active" : ""}
-                >
-                  {filter.toLowerCase()}
-                </Styled.TodoFilterOption>
-              ))}
-            </Styled.TodoFilter>
-            {isExistCompletedTodo && (
-              <Styled.TodoClearCompleteButton onClick={handleClearCompleteClick}>
-                Clear Complete
-              </Styled.TodoClearCompleteButton>
-            )}
-          </Styled.TodoFooter>
-        )}
-      </Styled.TodoMain>
-    </Styled.Todos>
+    <TodoPresenter
+      state={state}
+      filters={filters}
+      currentTodos={todos}
+      handleCreateInputChange={handleCreateInputChange}
+      handleCreateInputKeydown={handleCreateInputKeydown}
+      handleToggleAllClick={handleToggleAllClick}
+      handleCheckBoxClick={handleCheckBoxClick}
+      handleTextDoubleClick={handleTextDoubleClick}
+      handleEditInputBlur={handleEditInputBlur}
+      handleEditInputChange={handleEditInputChange}
+      handleEditInputKeydown={handleEditInputKeydown}
+      handleDeleteClick={handleDeleteClick}
+      handleFilterChange={handleFilterChange}
+      handleClearCompleteClick={handleClearCompleteClick}
+    />
   );
 }
