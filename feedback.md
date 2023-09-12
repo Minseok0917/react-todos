@@ -8,14 +8,14 @@
 
 코드 보면서 나온거
 
-1. storage 제어 관련 코드 분리하기
-2. useState initialState 함수로 바꾸기
-3. useState initialState는 storage 값 직접 참조 대신 외부 함수로 한번 감싸기 (localStorage.getItem("todos")가 아니라 그냥 getStoredTodos() 하면 알아서 Todo[]로 가져오도록, 나머지도 동일)
-4. useMemo는 단순 배열 반복 레벨의 계산에서는 쓸 필요 없다. + 사실상 해당 컴포넌트가 작동하려면 거진 매번 todos가 바뀌어야 하는데(toggle, add, remove 다 todos를 수정함) 다 todos가 deps로 들어가 있기 때문에 사실상 useMemo 쓴게 손해일 수도 있음
-5. todoRefs로 element를 저장해 직접 focus를 주는 대신 Input 컴포넌트 만들고 그 내부에서 mount 시에 직접 focus 처리하자
+1. (Clear) storage 제어 관련 코드 분리하기
+2. (Clear) useState initialState 함수로 바꾸기
+3. (Clear) useState initialState는 storage 값 직접 참조 대신 외부 함수로 한번 감싸기 (localStorage.getItem("todos")가 아니라 그냥 getStoredTodos() 하면 알아서 Todo[]로 가져오도록, 나머지도 동일)
+4. (Clear) useMemo는 단순 배열 반복 레벨의 계산에서는 쓸 필요 없다. + 사실상 해당 컴포넌트가 작동하려면 거진 매번 todos가 바뀌어야 하는데(toggle, add, remove 다 todos를 수정함) 다 todos가 deps로 들어가 있기 때문에 사실상 useMemo 쓴게 손해일 수도 있음
+5. (Clear) todoRefs로 element를 저장해 직접 focus를 주는 대신 Input 컴포넌트 만들고 그 내부에서 mount 시에 직접 focus 처리하자
 6. filterServices는 현재 형태로 할거라면 컴포넌트 외부로 빼고 함수 인자로 todos를 받는 식으로 하는게 좋을 듯
-7. useEffect의 localStorage.setItem 저장 로직은 굳이 바로비로 처리해줄 필요 없으니 debounding도 할 겸 setTimeout 같은거로 감싸자
-8. handlers object는 뭐 취향의 영역으로도 볼 수 있지만 리액트에서는 걍 함수로 만들어서 굳이 안쓰는게 좋을 듯
+7. (Clear) useEffect의 localStorage.setItem 저장 로직은 굳이 바로비로 처리해줄 필요 없으니 debounding도 할 겸 setTimeout 같은거로 감싸자
+8. (Clear) handlers object는 뭐 취향의 영역으로도 볼 수 있지만 리액트에서는 걍 함수로 만들어서 굳이 안쓰는게 좋을 듯
 9. nextId 값은 state로 존재할 필요가 없음. 그냥 컴포넌트 외부에 IdGenerator 같은거 만들어서 써도 될 듯
 10. toggleAllTodos에서는 이미 map으로 복사되기 때문에 spread를 사용할 필요 없다.
 11. 지금 handler들을 보면 대부분 아래 형태인데 parameter로 받은 todo랑 setTodos([…todos])에 인과관계가 명확하지 않기 때문에 좋지 않은 코드임.

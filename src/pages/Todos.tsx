@@ -36,12 +36,20 @@ export default function Todos() {
 
   const activeTodoCount: number = state.todos.filter(({ completed }: Todo) => !completed).length;
 
+  const filters: Filter[] = ["ALL", "ACTIVE", "COMPLETE"];
   const filterServices = {
     ALL: () => state.todos,
     ACTIVE: () => state.todos.filter(({ completed }: Todo) => !completed),
     COMPLETE: () => state.todos.filter(({ completed }: Todo) => completed),
   };
   const currentTodos = useMemo(() => filterServices[state.filter](), [state.todos, state.filter]);
+
+  const createTodo = (text: string): Todo => ({
+    id,
+    text,
+    completed: false,
+    edit: false,
+  });
 
   function handleCreateInputChange(event: React.FormEvent<HTMLInputElement>) {
     setState({ ...state, todoText: event.currentTarget.value });
@@ -51,12 +59,7 @@ export default function Todos() {
     const isCreated: Boolean = ["Tab", "Enter"].includes(event.key);
     const isValid: Boolean = inputValue.length > 0;
     if (isCreated && isValid) {
-      const todo: Todo = {
-        id,
-        text: inputValue,
-        completed: false,
-        edit: false,
-      };
+      const todo: Todo = createTodo(inputValue);
       setId(id + 1);
       setState({ ...state, todos: [...state.todos, todo], todoText: "" });
     }
@@ -71,7 +74,7 @@ export default function Todos() {
   }
   function handleCheckBoxClick(todo: Todo) {
     todo.completed = !todo.completed;
-    setState({ ...state });
+    setState({ ...state, todos: [...state.todos] });
   }
   function handleTextDoubleClick(todo: Todo) {
     todo.edit = true;
@@ -130,10 +133,7 @@ export default function Todos() {
         <Styled.TodoList>
           {currentTodos.map((todo: Todo) => (
             <Styled.TodoItem key={todo.id}>
-              <Styled.TodoItemCheckBox
-                $edit={todo.edit} // 이거
-                onClick={() => handleCheckBoxClick(todo)}
-              >
+              <Styled.TodoItemCheckBox $edit={todo.edit} onClick={() => handleCheckBoxClick(todo)}>
                 {todo.completed && <BsCheckLg />}
               </Styled.TodoItemCheckBox>
               {todo.edit ? (
@@ -163,24 +163,14 @@ export default function Todos() {
               {activeTodoCount} item{state.todos.length > 1 ? "s" : ""} left
             </Styled.TodoCountText>
             <Styled.TodoFilter>
-              <Styled.TodoFilterOption
-                onClick={() => handleFilterChange("ALL")}
-                className={state.filter === "ALL" ? "active" : ""}
-              >
-                All
-              </Styled.TodoFilterOption>
-              <Styled.TodoFilterOption
-                onClick={() => handleFilterChange("ACTIVE")}
-                className={state.filter === "ACTIVE" ? "active" : ""}
-              >
-                Active
-              </Styled.TodoFilterOption>
-              <Styled.TodoFilterOption
-                onClick={() => handleFilterChange("COMPLETE")}
-                className={state.filter === "COMPLETE" ? "active" : ""}
-              >
-                Complete
-              </Styled.TodoFilterOption>
+              {filters.map((filter) => (
+                <Styled.TodoFilterOption
+                  onClick={() => handleFilterChange(filter)}
+                  className={state.filter === filter ? "active" : ""}
+                >
+                  {filter.toLowerCase()}
+                </Styled.TodoFilterOption>
+              ))}
             </Styled.TodoFilter>
             {isExistCompletedTodo && (
               <Styled.TodoClearCompleteButton onClick={handleClearCompleteClick}>

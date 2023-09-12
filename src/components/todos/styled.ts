@@ -41,8 +41,7 @@ export const TodoInput = styled.input`
 
 export const TodoMain = styled.div`
   border: 1px solid #eee;
-  box-shadow: rgba(100, 100, 100, 0.15) 0px 15px 25px,
-    rgba(100, 100, 100, 0.05) 0px 5px 10px;
+  box-shadow: rgba(100, 100, 100, 0.15) 0px 15px 25px, rgba(100, 100, 100, 0.05) 0px 5px 10px;
 `;
 export const TodoList = styled.div``;
 export const TodoItem = styled.div`
@@ -124,6 +123,7 @@ export const TodoFilterOption = styled.div`
   padding: 0 0.75rem;
   border: 1px solid transparent;
   cursor: pointer;
+  text-transform: capitalize;
   &:hover {
     border: 1px solid #f4e5e5;
   }

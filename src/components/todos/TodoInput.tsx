@@ -8,13 +8,7 @@ export interface TodoInput {
   onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
-export function TodoInput({
-  value,
-  focus,
-  onBlur,
-  onInput,
-  onKeyDown,
-}: TodoInput) {
+export function TodoInput({ value, focus, onBlur, onInput, onKeyDown }: TodoInput) {
   const todoRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     if (focus && todoRef.current) {
@@ -23,12 +17,6 @@ export function TodoInput({
   }, [focus]);
 
   return (
-    <Styled.TodoItemEditInput
-      ref={todoRef}
-      value={value}
-      onBlur={onBlur}
-      onInput={onInput}
-      onKeyDown={onKeyDown}
-    />
+    <Styled.TodoItemEditInput ref={todoRef} value={value} onBlur={onBlur} onInput={onInput} onKeyDown={onKeyDown} />
   );
 }
