@@ -1,8 +1,15 @@
 import { Dispatch, SetStateAction } from "react";
+import { useDebounce } from "./helpers";
+
+interface storageOptions {
+  debounce?: boolean;
+  debounceDelay?: number;
+}
 
 export function useLocalStorage<T>(
   key: string,
-  initalState: T
+  initalState: T,
+  options: storageOptions = {}
 ): [T, Dispatch<SetStateAction<T>>] {
   const [state, setState] = useState(() => {
     try {
@@ -12,8 +19,12 @@ export function useLocalStorage<T>(
       return initalState;
     }
   });
+  const { debounce, debounceDelay } = options;
   const setStorage = () => localStorage.setItem(key, JSON.stringify(state));
+  const debounceFunction = debounce
+    ? useDebounce(setStorage, debounceDelay)
+    : setStorage;
 
-  useEffect(setStorage, [state, key]);
+  useEffect(debounceFunction, [state, key]);
   return [state, setState];
 }

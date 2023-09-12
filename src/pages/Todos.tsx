@@ -2,6 +2,7 @@ import React from "react";
 import { BsTrash3, BsChevronCompactDown, BsCheckLg } from "react-icons/bs";
 import * as Styled from "@components/todos/styled";
 import { useLocalStorage } from "@/hooks/storage";
+import { useDebounce } from "@/hooks/helpers";
 
 interface Todo {
   id: number;
@@ -24,7 +25,10 @@ export default function Todos() {
     filter: "ALL",
   };
   const [id, setId] = useLocalStorage("todoId", 0);
-  const [state, setState] = useLocalStorage("todos", initalState);
+  const [state, setState] = useLocalStorage("todos", initalState, {
+    debounce: true,
+    debounceDelay: 150,
+  });
 
   const todoRefs = useRef<{ [key: number]: HTMLInputElement }>({});
 
