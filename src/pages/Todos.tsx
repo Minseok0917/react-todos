@@ -2,7 +2,7 @@ import React from "react";
 import { BsTrash3, BsChevronCompactDown, BsCheckLg } from "react-icons/bs";
 import * as Styled from "@components/todos/styled";
 import { useLocalStorage } from "@/hooks/storage";
-import { useDebounce } from "@/hooks/helpers";
+import { TodoInput } from "@components/todos/TodoInput";
 
 interface Todo {
   id: number;
@@ -29,8 +29,6 @@ export default function Todos() {
     debounce: true,
     debounceDelay: 150,
   });
-
-  const todoRefs = useRef<{ [key: number]: HTMLInputElement }>({});
 
   const isAllCompletedTodo: Boolean = state.todos.every(
     ({ completed }: Todo) => completed
@@ -87,7 +85,6 @@ export default function Todos() {
     todoDoubleClick(todo: Todo) {
       todo.edit = true;
       setState({ ...state });
-      setTimeout(() => todoRefs.current[todo.id].focus(), 0);
     },
     todoEditBlur(todo: Todo) {
       todo.edit = false;
@@ -163,11 +160,9 @@ export default function Todos() {
                 {todo.completed && <BsCheckLg />}
               </Styled.TodoItemCheckBox>
               {todo.edit ? (
-                <Styled.TodoItemEditInput
+                <TodoInput
                   value={todo.text}
-                  ref={($element: HTMLInputElement) =>
-                    (todoRefs.current[todo.id] = $element)
-                  }
+                  focus={todo.edit}
                   onBlur={() => handlers.todoEditBlur(todo)}
                   onInput={(event: React.FormEvent<HTMLInputElement>) =>
                     handlers.todoEditTextChange(event, todo)
