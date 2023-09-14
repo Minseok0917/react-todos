@@ -1,9 +1,127 @@
 import React from "react";
-import { useLocalStorage } from "@/hooks/storage";
+import { useIdGenerator, useLocalStorage, useDebounce } from "@/hooks/helpers";
 import { TodoPresenter } from "@components/todos";
 import { Filter, Todo, State } from "@components/todos/todos.interface";
 
 export default function Todos() {
+  const idGenerator = useIdGenerator("todoId");
+  const [state, setState] = useLocalStorage<State>("todos", {
+    todos: [],
+    todoText: "",
+    todoFilter: "all",
+  });
+  const todos = state.todos.filter((todo: Todo) => {
+    if (state.todoFilter === "active") return !todo.completed;
+    if (state.todoFilter === "complete") return todo.completed;
+    return true;
+  });
+  const filters: Filter[] = ["all", "active", "complete"];
+  const activeTodoCount: number = state.todos.filter(({ completed }: Todo) => !completed).length;
+  const isAllCompleted: boolean = state.todos.every(({ completed }: Todo) => completed);
+  const isExistCompletedTodo: boolean = state.todos.some(({ completed }: Todo) => completed);
+
+  const todoGenerator = (text: string): Todo => ({
+    text,
+    id: idGenerator.getId(),
+    edit: false,
+    completed: false,
+  });
+  const applyCallbackToTodoByIdWithClone = (
+    id: number,
+    callback: (todo: Todo, todos: Todo[]) => void
+  ): [todo: Todo | undefined, todos: Todo[]] => {
+    const todos = structuredClone(state.todos);
+    const todo = todos.find((todo: Todo) => todo.id === id);
+    if (todo) callback(todo, todos);
+    return [todo, todos];
+  };
+
+  const handleTodoTextChange = useDebounce((event: React.ChangeEvent<HTMLInputElement>) => {
+    const todoText = event.target.value;
+    console.log(event);
+    setState({ ...state, todoText });
+  }, 300);
+  const handleTodoTextKeydown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const isValid = state.todoText.trim().length > 0;
+    const isCreated = ["Tab", "Enter"].includes(event.key) && isValid;
+    if (!isCreated) return;
+
+    const todo: Todo = todoGenerator(state.todoText);
+    setState({ ...state, todos: [...state.todos, todo], todoText: "" });
+  };
+  const handleToggleAllClick = () => {
+    const todos = state.todos.map((todo: Todo) => ({ ...todo, completed: !isAllCompleted }));
+    setState({ ...state, todos });
+  };
+  const handleCheckBoxClick = (id: number) => {
+    applyCallbackToTodoByIdWithClone(id, (todo, todos) => {
+      todo.completed != todo.completed;
+      setState({ ...state, todos });
+    });
+  };
+  const handleTextDoubleClick = (id: number) => {
+    applyCallbackToTodoByIdWithClone(id, (todo, todos) => {
+      todo.edit = true;
+      setState({ ...state, todos });
+    });
+  };
+  const handleEditInputBlur = (id: number) => {
+    applyCallbackToTodoByIdWithClone(id, (todo, todos) => {
+      todo.edit = false;
+      setState({ ...state, todos });
+    });
+  };
+  const handleEditInputChange = (event: React.FormEvent<HTMLInputElement>, id: number) => {
+    applyCallbackToTodoByIdWithClone(id, (todo, todos) => {
+      todo.text = event.currentTarget.value;
+      setState({ ...state, todos });
+    });
+  };
+  const handleEditInputKeydown = (event: React.KeyboardEvent<HTMLInputElement>, id: number) => {
+    const isValid = event.currentTarget.value.trim().length > 0;
+    const isUpdated = ["Tab", "Enter"].includes(event.key);
+    if (!isUpdated) return;
+
+    const todos = isValid
+      ? applyCallbackToTodoByIdWithClone(id, (todo) => (todo.edit = false))[1]
+      : state.todos.filter((todo: Todo) => todo.id !== id);
+    setState({ ...state, todos });
+  };
+  const handleDeleteClick = (id: number) => {
+    const todos: Todo[] = state.todos.filter((todo: Todo) => todo.id !== id);
+    setState({ ...state, todos });
+  };
+  const handleFilterChange = (filterName: Filter) => {
+    setState({ ...state, todoFilter: filterName });
+  };
+  const handleClearCompleteClick = () => {
+    const todos: Todo[] = state.todos.filter(({ completed }: Todo) => !completed);
+    setState({ ...state, todos });
+  };
+  return (
+    <TodoPresenter
+      state={state}
+      filters={filters}
+      currentTodos={todos}
+      activeTodoCount={activeTodoCount}
+      isAllCompletedTodo={isAllCompleted}
+      isExistCompletedTodo={isExistCompletedTodo}
+      handleTodoTextChange={handleTodoTextChange}
+      handleTodoTextKeydown={handleTodoTextKeydown}
+      handleToggleAllClick={handleToggleAllClick}
+      handleCheckBoxClick={handleCheckBoxClick}
+      handleTextDoubleClick={handleTextDoubleClick}
+      handleEditInputBlur={handleEditInputBlur}
+      handleEditInputChange={handleEditInputChange}
+      handleEditInputKeydown={handleEditInputKeydown}
+      handleDeleteClick={handleDeleteClick}
+      handleFilterChange={handleFilterChange}
+      handleClearCompleteClick={handleClearCompleteClick}
+    />
+  );
+}
+
+/* export default function Todos() {
   const initalState = (): State => ({
     todos: [],
     todoText: "",
@@ -96,11 +214,14 @@ export default function Todos() {
     setState({ ...state, todos: [...notCompleteTodos] });
   }
 
-  return (
+`  return (
     <TodoPresenter
       state={state}
       filters={filters}
       currentTodos={todos}
+      activeTodoCount={activeTodoCount}
+      isAllCompletedTodo={isAllCompletedTodo}
+      isExistCompletedTodo={isExistCompletedTodo}
       handleCreateInputChange={handleCreateInputChange}
       handleCreateInputKeydown={handleCreateInputKeydown}
       handleToggleAllClick={handleToggleAllClick}
@@ -113,5 +234,6 @@ export default function Todos() {
       handleFilterChange={handleFilterChange}
       handleClearCompleteClick={handleClearCompleteClick}
     />
-  );
+  );`
 }
+ */

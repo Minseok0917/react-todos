@@ -13,15 +13,18 @@ interface TodoPresenter {
   state: State;
   filters: Filter[];
   currentTodos: Todo[];
-  handleCreateInputChange: (event: React.FormEvent<HTMLInputElement>) => void;
-  handleCreateInputKeydown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+  activeTodoCount: number;
+  isAllCompletedTodo: Boolean;
+  isExistCompletedTodo: Boolean;
+  handleTodoTextChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  handleTodoTextKeydown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
   handleToggleAllClick: () => void;
-  handleCheckBoxClick: (todo: Todo) => void;
-  handleTextDoubleClick: (todo: Todo) => void;
-  handleEditInputBlur: (todo: Todo) => void;
-  handleEditInputChange: (event: React.FormEvent<HTMLInputElement>, todo: Todo) => void;
-  handleEditInputKeydown: (event: React.KeyboardEvent<HTMLInputElement>, editTodo: Todo) => void;
-  handleDeleteClick: (deleteTodo: Todo) => void;
+  handleCheckBoxClick: (id: number) => void;
+  handleTextDoubleClick: (id: number) => void;
+  handleEditInputBlur: (id: number) => void;
+  handleEditInputChange: (event: React.FormEvent<HTMLInputElement>, id: number) => void;
+  handleEditInputKeydown: (event: React.KeyboardEvent<HTMLInputElement>, id: number) => void;
+  handleDeleteClick: (id: number) => void;
   handleFilterChange: (filterName: Filter) => void;
   handleClearCompleteClick: () => void;
 }
@@ -43,8 +46,11 @@ export function TodoPresenter({
   state,
   filters,
   currentTodos,
-  handleCreateInputChange,
-  handleCreateInputKeydown,
+  activeTodoCount,
+  isAllCompletedTodo,
+  isExistCompletedTodo,
+  handleTodoTextChange,
+  handleTodoTextKeydown,
   handleToggleAllClick,
   handleCheckBoxClick,
   handleTextDoubleClick,
@@ -64,8 +70,8 @@ export function TodoPresenter({
             {state.todos.length > 0 && <BsChevronCompactDown onClick={handleToggleAllClick} />}
           </Styled.TodoCompleteToggleIcon>
           <Styled.TodoInput
-            onInput={handleCreateInputChange}
-            onKeyDown={handleCreateInputKeydown}
+            onInput={handleTodoTextChange}
+            onKeyDown={handleTodoTextKeydown}
             value={String(state.todoText)}
           />
         </Styled.TodoInputArea>
@@ -74,23 +80,23 @@ export function TodoPresenter({
         <Styled.TodoList>
           {currentTodos.map((todo: Todo) => (
             <Styled.TodoItem key={todo.id}>
-              <Styled.TodoItemCheckBox $edit={todo.edit} onClick={() => handleCheckBoxClick(todo)}>
+              <Styled.TodoItemCheckBox $edit={todo.edit} onClick={() => handleCheckBoxClick(todo.id)}>
                 {todo.completed && <BsCheckLg />}
               </Styled.TodoItemCheckBox>
               {todo.edit ? (
                 <TodoInput
                   value={todo.text}
                   focus={todo.edit}
-                  onBlur={() => handleEditInputBlur(todo)}
-                  onInput={(event: React.FormEvent<HTMLInputElement>) => handleEditInputChange(event, todo)}
-                  onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => handleEditInputKeydown(event, todo)}
+                  onBlur={() => handleEditInputBlur(todo.id)}
+                  onInput={(event: React.FormEvent<HTMLInputElement>) => handleEditInputChange(event, todo.id)}
+                  onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => handleEditInputKeydown(event, todo.id)}
                 />
               ) : (
                 <>
-                  <Styled.TodoItemText onDoubleClick={() => handleTextDoubleClick(todo)}>
+                  <Styled.TodoItemText onDoubleClick={() => handleTextDoubleClick(todo.id)}>
                     {todo.text}
                   </Styled.TodoItemText>
-                  <Styled.TodoItemDeleteButton onClick={() => handleDeleteClick(todo)}>
+                  <Styled.TodoItemDeleteButton onClick={() => handleDeleteClick(todo.id)}>
                     <BsTrash3 />
                   </Styled.TodoItemDeleteButton>
                 </>
@@ -106,8 +112,9 @@ export function TodoPresenter({
             <Styled.TodoFilter>
               {filters.map((filter) => (
                 <Styled.TodoFilterOption
+                  key={filter}
                   onClick={() => handleFilterChange(filter)}
-                  className={state.filter === filter ? "active" : ""}
+                  className={state.todoFilter === filter ? "active" : ""}
                 >
                   {filter.toLowerCase()}
                 </Styled.TodoFilterOption>
